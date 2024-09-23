@@ -1,0 +1,13 @@
+{
+  "name": "razor", 
+  "version": "1.0.0", 
+  "description": "", 
+  "homepage": "", 
+  "tags": [], 
+  "author": "", 
+  "license": "ISC", 
+  "sources": [
+    "https://nyssa.bladelang.com"
+  ], 
+  "deps": {}
+}
