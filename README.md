@@ -1,6 +1,6 @@
 # razor
 
-_Package description goes here._
+Webview bindings for Blade
 
 ### Package Information
 
