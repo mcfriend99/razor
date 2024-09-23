@@ -17,6 +17,7 @@ class Razor {
    * @param {bool} debug - Enable developer tools if supported by the backend.
    * @param {number?} width - The width of the window (optional) - Default: 480
    * @param {number?} height - The height of the window (optional) - Default: 320
+   * @constructor
    */
   Razor(debug, width, height) {
     if debug == nil {
@@ -33,7 +34,7 @@ class Razor {
     }
 
     self._load()
-    self._webview = self._create(debug, nil)
+    self._webview = self._create(debug ? 1 : 0, nil)
     self.set_size(width, height)
   }
 
