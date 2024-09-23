@@ -1,10 +1,9 @@
 import clib
 import os
 import json
+import reflect
 
-import .errors {*}
 import .hints {*}
-
 
 
 class Razor {
@@ -15,17 +14,27 @@ class Razor {
   /**
    * Creates a new Razor instance.
    * 
-   * @param {bool} debug Enable developer tools if supported by the backend.
+   * @param {bool} debug - Enable developer tools if supported by the backend.
+   * @param {number?} width - The width of the window (optional) - Default: 480
+   * @param {number?} height - The height of the window (optional) - Default: 320
    */
-  Razor(debug) {
+  Razor(debug, width, height) {
     if debug == nil {
       debug = false
     } else if !is_bool(debug) {
       die Exception('debug must be boolean')
     }
 
+    if width == nil width = 480
+
+    if (width != nil and !is_number(width)) or
+        (height != nil and !is_number(height)) {
+      die Exception('invalid window size')
+    }
+
     self._load()
     self._webview = self._create(debug, nil)
+    self.set_size(width, height)
   }
 
   /**
@@ -77,6 +86,10 @@ class Razor {
    * @returns self
    */
   set_title(title) {
+    if !is_string(title) {
+      die Exception('string expected')
+    }
+
     self._set_title(self._webview, title)
     return self
   }
@@ -91,12 +104,21 @@ class Razor {
    *   no effect when using GTK 4.
    *
    * @param {number} width - New width.
-   * @param {number} height - New height.
-   * @param {number} hints - Size hints (one of more of HINT_* 
-   *    constants).
+   * @param {number?} height - New height (optional) - Default: 320.
+   * @param {number?} hints - Size hints (Optional - One of more of HINT_* 
+   *    constants) - Default: `HINT_NONE`.
    * @returns self
    */
   set_size(width, height, hints) {
+    if !height height = 320
+    if !hints hints = HINT_NONE
+
+    if !is_number(width) or !is_number(height) {
+      die Exception('number expected for width and/or height')
+    } else if !is_number(hints) {
+      die Exception('HINT_* expected for hints')
+    }
+
     self._set_size(self._webview, width, height, hints)
     return self
   }
@@ -116,6 +138,10 @@ class Razor {
    * @returns self
    */
   navigate(url) {
+    if !is_string(url) {
+      die Exception('string expected')
+    }
+    
     self._navigate(self._webview, url)
     return self
   }
@@ -133,7 +159,31 @@ class Razor {
    * @returns self
    */
   set_html(html) {
+    if !is_string(html) {
+      die Exception('string expected')
+    }
+    
     self._set_html(self._webview, html)
+    return self
+  }
+
+  /**
+   * Loads a file into razor.
+   * 
+   * @params {string} path - File path.
+   * @returns self
+   */
+  load_file(path) {
+    if !is_string(path) {
+      die Exception('string expected')
+    }
+    
+    var fh = file(path)
+    if(fh.exists()) {
+      var abs_path = fh.abs_path()
+      self.navigate('file://${abs_path}')
+    }
+
     return self
   }
 
@@ -145,6 +195,10 @@ class Razor {
    * @returns self
    */
   init(js) {
+    if !is_string(js) {
+      die Exception('string expected')
+    }
+    
     self._init(self._webview, js)
     return self
   }
@@ -158,6 +212,10 @@ class Razor {
    * @returns self
    */
   eval(js) {
+    if !is_string(js) {
+      die Exception('string expected')
+    }
+    
     self._eval(self._webview, js)
     return self
   }
@@ -165,16 +223,24 @@ class Razor {
   /**
    * Binds a function pointer to a new global JavaScript function.
    *
-   * Internally, JS glue code is injected to create the JS function by the
-   * given name. The callback function is passed a request identifier,
-   * a request string and a user-provided argument. The request string is
-   * a JSON array of the arguments passed to the JS function.
+   * Internally, JS glue code is injected to create the JS function 
+   * by the given name. The callback function is passed the request 
+   * from JS as a JSON object (which means it can be one of nil, 
+   * boolean, string, list or dictionary).
    *
    * @param {string} name - Name of the JS function.
    * @param {function} callback - Callback function.
    * @returns self
    */
   bind(name, callback) {
+    if !is_string(name) {
+      die Exception('string expected for name')
+    } else if !is_function(callback) {
+      die Exception('function expected for callback')
+    } else if reflect.get_function_metadata(callback).arity == 0 {
+      die Exception('callback function must accept at least 1 argument')
+    }
+    
     self._bind(
       self._webview, 
       name, 
@@ -206,6 +272,10 @@ class Razor {
    * @returns self
    */
   unbind(name) {
+    if !is_string(name) {
+      die Exception('string expected')
+    }
+    
     self._unbind(self._webview, name)
     return self
   }
