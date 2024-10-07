@@ -15,3 +15,6 @@
 
 # log files
 *.log
+
+# others
+.DS_Store
