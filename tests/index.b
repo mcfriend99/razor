@@ -3,11 +3,11 @@ import ..app {*}
 describe('main test', @{
   it('should throw with wrong constructor parameter', @{
     expect(@{
-      Razor(1)
+      Razor(true)
     }).to_throw()
   })
 
-  var razor = Razor(true)
+  var razor = Razor()
 
   it('should set title correctly', @{
     expect(@{
@@ -23,11 +23,11 @@ describe('main test', @{
 
   it('should bind function correctly', @{
     expect(@{
-      razor.bind('save', @(req) {
-        return req
+      razor.bind('save', @(args) {
+        return args
       })
-      razor.bind('dummy_save', @(req) {
-        return req
+      razor.bind('dummy_save', @(args) {
+        return args
       })
     }).not().to_throw()
   })
@@ -35,7 +35,7 @@ describe('main test', @{
   it('should set confirm callback while binding a function', @{
     expect(@{
       razor.bind('save2', @{
-        return req
+        return args
       })
     }).to_throw()
   })
@@ -68,10 +68,10 @@ describe('main test', @{
   })
 
   it('should work with html page', @{
-    razor = Razor(true)
+    razor = Razor()
 
     expect(@{
-      razor.navigate('https://google.com')
+      razor.navigate('https://bladelang.org')
     }).not().to_throw()
 
     expect(@{
@@ -80,7 +80,7 @@ describe('main test', @{
   })
 
   it('should work with html file', @{
-    razor = Razor(true)
+    razor = Razor()
 
     expect(@{
       razor.load_file('./tests/testpage.html')
@@ -92,7 +92,7 @@ describe('main test', @{
   })
 
   it('should destroy without throwing', @{
-    razor = Razor(true)
+    razor = Razor()
 
     expect(@{
       razor.run()
@@ -104,13 +104,13 @@ describe('main test', @{
   })
 
   it('should run init script', @{
-    razor = Razor(true)
+    razor = Razor()
 
     var logs = []
 
     expect(@{
-      razor.bind('console_log', @(req) {
-        var log = ' '.join(req)
+      razor.bind('console_log', @(args) {
+        var log = ' '.join(args)
         logs.append(log)
         echo log
         return nil
@@ -140,6 +140,22 @@ describe('main test', @{
 
     expect(logs.length()).to_be(1)
     expect(logs).to_be(['Hello, World!'])
+    
+    expect(@{
+      razor.destroy()
+    }).not().to_throw()
+  })
+
+  it('should eval JS correctly', @{
+    razor = Razor()
+
+    expect(@{
+      razor.eval("document.write('Hello World Eval')")
+    }).not().to_throw()
+
+    expect(@{
+      razor.run()
+    }).not().to_throw()
     
     expect(@{
       razor.destroy()

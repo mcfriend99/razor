@@ -6,6 +6,11 @@ import reflect
 import .hints {*}
 
 
+/**
+ * class Razor implements and exposes the WebView interface.
+ * 
+ * @class
+ */
 class Razor {
   var _webview
   var _lib
@@ -14,23 +19,24 @@ class Razor {
   /**
    * Creates a new Razor instance.
    * 
-   * @param {bool} debug - Enable developer tools if supported by the backend.
    * @param {number?} width - The width of the window (optional) - Default: 480
    * @param {number?} height - The height of the window (optional) - Default: 320
+   * @param {bool} debug - Enable developer tools if supported by the backend.
    * @constructor
    */
-  Razor(debug, width, height) {
-    if debug == nil {
-      debug = false
-    } else if !is_bool(debug) {
-      die Exception('debug must be boolean')
-    }
+  Razor(width, height, debug) {
 
     if width == nil width = 480
 
     if (width != nil and !is_number(width)) or
         (height != nil and !is_number(height)) {
-      die Exception('invalid window size')
+      raise Exception('invalid window size')
+    }
+
+    if debug == nil {
+      debug = false
+    } else if !is_bool(debug) {
+      raise Exception('debug must be boolean')
     }
 
     self._load()
@@ -88,7 +94,7 @@ class Razor {
    */
   set_title(title) {
     if !is_string(title) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
 
     self._set_title(self._webview, title)
@@ -115,9 +121,9 @@ class Razor {
     if !hints hints = HINT_NONE
 
     if !is_number(width) or !is_number(height) {
-      die Exception('number expected for width and/or height')
+      raise Exception('number expected for width and/or height')
     } else if !is_number(hints) {
-      die Exception('HINT_* expected for hints')
+      raise Exception('HINT_* expected for hints')
     }
 
     self._set_size(self._webview, width, height, hints)
@@ -140,7 +146,7 @@ class Razor {
    */
   navigate(url) {
     if !is_string(url) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     self._navigate(self._webview, url)
@@ -161,7 +167,7 @@ class Razor {
    */
   set_html(html) {
     if !is_string(html) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     self._set_html(self._webview, html)
@@ -176,7 +182,7 @@ class Razor {
    */
   load_file(path) {
     if !is_string(path) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     var fh = file(path)
@@ -197,7 +203,7 @@ class Razor {
    */
   init(js) {
     if !is_string(js) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     self._init(self._webview, js)
@@ -214,7 +220,7 @@ class Razor {
    */
   eval(js) {
     if !is_string(js) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     self._eval(self._webview, js)
@@ -235,18 +241,18 @@ class Razor {
    */
   bind(name, callback) {
     if !is_string(name) {
-      die Exception('string expected for name')
+      raise Exception('string expected for name')
     } else if !is_function(callback) {
-      die Exception('function expected for callback')
+      raise Exception('function expected for callback')
     } else if reflect.get_function_metadata(callback).arity == 0 {
-      die Exception('callback function must accept at least 1 argument')
+      raise Exception('callback function must accept at least 1 argument')
     }
     
     self._bind(
       self._webview, 
       name, 
       clib.create_callback(@(seq, req, args) {
-        try {
+        catch {
           var res =  callback(json.decode(req))
           if res {
             if !is_dict(res) and !is_list(res) {
@@ -255,7 +261,9 @@ class Razor {
 
             self._do_return(seq, 0, res)
           }
-        } catch Exception e {
+        } as e 
+        
+        if e {
           echo '${typeof(e)}: ${e.message}\n${e.stacktrace}'
           self._do_return(seq, 1, e.message)
         }
@@ -268,13 +276,12 @@ class Razor {
   /**
    * Removes a binding created with `bind()`.
    *
-   * @param w The webview instance.
-   * @param name Name of the binding.
+   * @param string name - Name of the binding.
    * @returns self
    */
   unbind(name) {
     if !is_string(name) {
-      die Exception('string expected')
+      raise Exception('string expected')
     }
     
     self._unbind(self._webview, name)
@@ -354,7 +361,7 @@ class Razor {
       when 'linux' self._library_file = os.join_paths(base, '../bin/${arch}/linux/webview.so') 
       when 'osx' self._library_file = os.join_paths(base, '../bin/${arch}/osx/webview.dylib') 
       when 'windows' self._library_file = os.join_paths(base, '../bin/${arch}/windows/webview.dll') 
-      default die Exception('unsupported OS')
+      default raise Exception('unsupported OS')
     }
     
     return self._library_file

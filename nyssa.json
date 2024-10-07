@@ -1,11 +1,11 @@
 {
   "name": "razor", 
   "version": "1.0.0", 
-  "description": "", 
-  "homepage": "", 
-  "tags": [], 
-  "author": "", 
-  "license": "ISC", 
+  "description": "Webview bindings for Blade", 
+  "homepage": "https://github.com/mcfiend99/razor.git", 
+  "tags": ["web", "webview"], 
+  "author": "Richard Ore <eqliqandfriends@gmail.com>", 
+  "license": "MIT", 
   "sources": [
     "https://nyssa.bladelang.com"
   ], 
