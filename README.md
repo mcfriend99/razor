@@ -2,7 +2,7 @@
 
 [Webview](https://github.com/webview/webview) bindings for Blade for build modern cross-platform GUIs.
 
-![screenshot](images/razor-blade.png)
+![screenshot](https://github.com/mcfriend99/razor/blob/main/images/razor-blade.png)
 
 ### Installation
 
